@@ -44,21 +44,10 @@ export const changeTodolistEntityStatusAC = (id: string, status: RequestStatusTy
 export const setTodolistsAC = (todolists: Array<TodolistType>) => ({type: 'SET-TODOLISTS', todolists} as const)
 
 //sagas
-/* export function fetchTodolistsWorkerSaga*():any {
-        yield put(setAppStatusAC('loading'))
-        const res = yield call(todolistsAPI.getTodolists)
-            .then((res) => {
-                dispatch(setTodolistsAC(res.data))
-                dispatch(setAppStatusAC('succeeded'))
-            })
-            .catch(error => {
-                handleServerNetworkError(error, dispatch);
-            })
 
-} */
 
 // thunks
-export const fetchTodolistsTC = () => {
+export const fetchTodolistsTC = () => {/////////////delete
     return (dispatch: ThunkDispatch) => {
         dispatch(setAppStatusAC('loading'))
         todolistsAPI.getTodolists()
@@ -71,7 +60,7 @@ export const fetchTodolistsTC = () => {
             })
     }
 }
-export const removeTodolistTC = (todolistId: string) => {
+/* export const removeTodolistTC = (todolistId: string) => {
     return (dispatch: ThunkDispatch) => {
         //изменим глобальный статус приложения, чтобы вверху полоса побежала
         dispatch(setAppStatusAC('loading'))
@@ -84,7 +73,8 @@ export const removeTodolistTC = (todolistId: string) => {
                 dispatch(setAppStatusAC('succeeded'))
             })
     }
-}
+} */
+
 export const addTodolistTC = (title: string) => {
     return (dispatch: ThunkDispatch) => {
         dispatch(setAppStatusAC('loading'))

@@ -1,7 +1,7 @@
 import {Dispatch} from 'redux'
 import {ResponseType, authAPI} from '../api/todolists-api'
 import {setIsLoggedInAC} from '../features/Login/auth-reducer'
-import { call, put } from 'redux-saga/effects'
+import { call, put, takeEvery } from 'redux-saga/effects'
 import { AxiosResponse } from 'axios'
 
 const initialState: InitialStateType = {
@@ -54,6 +54,9 @@ export function* initializeAppWorkerSaga() {
 export type SetAppErrorActionType = ReturnType<typeof setAppErrorAC>
 export type SetAppStatusActionType = ReturnType<typeof setAppStatusAC>
 
+export function* appSaga(){
+    yield takeEvery('APP/INITIALIZE_APP',initializeAppWorkerSaga )
+}
 
 type ActionsType =
     | SetAppErrorActionType

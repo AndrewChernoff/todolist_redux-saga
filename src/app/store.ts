@@ -2,11 +2,12 @@ import {tasksReducer} from '../features/TodolistsList/tasks-reducer';
 import {todolistsReducer} from '../features/TodolistsList/todolists-reducer';
 import {applyMiddleware, combineReducers, createStore} from 'redux'
 import thunkMiddleware from 'redux-thunk'
-import {appReducer, initializeAppWorkerSaga} from './app-reducer'
+import {appReducer, appSaga, initializeAppWorkerSaga} from './app-reducer'
 import {authReducer} from '../features/Login/auth-reducer'
 import createSagaMiddleware from 'redux-saga'
-import { takeEvery } from 'redux-saga/effects'
+import { all, takeEvery } from 'redux-saga/effects'
 import { tasksWatcherSagas } from '../features/TodolistsList/tasks-sagas.ts/tasks-sagas';
+import { todolistWatcherSagas } from '../features/TodolistsList/todolist-sagas';
 
 // объединяя reducer-ы с помощью combineReducers,
 // мы задаём структуру нашего единственного объекта-состояния
@@ -27,8 +28,11 @@ export const store = createStore(rootReducer, applyMiddleware(thunkMiddleware, s
 sagaMiddleware.run(rootWatcher)
 
 function* rootWatcher() {
-    yield takeEvery('APP/INITIALIZE_APP', initializeAppWorkerSaga)
-    yield tasksWatcherSagas()
+ //   yield takeEvery('APP/INITIALIZE_APP', initializeAppWorkerSaga)
+ //   yield tasksWatcherSagas()
+ //   yield todolistWatcherSagas() ///not getting trigged
+
+ yield all([appSaga(), tasksWatcherSagas(), todolistWatcherSagas()])
 }
 
 

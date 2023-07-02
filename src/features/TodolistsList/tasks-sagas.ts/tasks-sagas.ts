@@ -1,8 +1,8 @@
-import { call, put, takeEvery } from "redux-saga/effects"
+import { call, put, select, takeEvery } from "redux-saga/effects"
 import { setAppStatusAC } from "../../../app/app-reducer"
 import { AxiosResponse } from "axios"
-import { GetTasksResponse, todolistsAPI } from "../../../api/todolists-api"
-import { addTaskAC, removeTaskAC, setTasksAC } from "../tasks-reducer"
+import { GetTasksResponse, ResponseType, TaskType, UpdateTaskModelType, todolistsAPI } from "../../../api/todolists-api"
+import { UpdateDomainTaskModelType, addTaskAC, removeTaskAC, setTasksAC, updateTaskAC } from "../tasks-reducer"
 import { handleServerAppError, handleServerAppErrorSaga, handleServerNetworkError, handleServerNetworkErrorSaga } from "../../../utils/error-utils"
 
 export function* fetchTasksWorkerSaga(action:ReturnType<typeof fetchTasks>) {
@@ -41,14 +41,50 @@ export function* addTaskWorkerSaga(action: ReturnType<typeof addTask>): any  {
             }        
     } catch (error) {
         yield* handleServerNetworkErrorSaga(error as any)
-
     }
 }
 
 export const addTask = (title: string, todolistId: string) => ({type: 'ADD_TASK', todolistId, title})
 
+
+export function* updateTaskWorkerSaga (action: ReturnType<typeof updateTask>) {
+        const task: TaskType = yield select(state => state.tasks[action.todolistId].find((t: TaskType) => t.id === action.taskId));
+
+        if (!task) {
+            //throw new Error("task not found in the state");
+            console.warn('task not found in the state')
+            return
+        }
+
+        const apiModel: UpdateTaskModelType = {
+            deadline: task.deadline,
+            description: task.description,
+            priority: task.priority,
+            startDate: task.startDate,
+            title: task.title,
+            status: task.status,
+            ...action.domainModel
+        }
+
+        const res: AxiosResponse<ResponseType<TaskType>> = yield call(todolistsAPI.updateTask, action.todolistId, action.taskId, apiModel)
+        try {
+            if (res.data.resultCode === 0) {
+                yield put(updateTaskAC(action.taskId, action.domainModel, action.todolistId))
+            } else {
+                yield* handleServerAppErrorSaga(res.data);
+            }
+        } catch (error) {
+            yield* handleServerNetworkErrorSaga(error as any)
+        }   
+    }
+
+export const updateTask = (taskId: string, domainModel: UpdateDomainTaskModelType, todolistId: string) => ({type: 'UPDATE_TASK_ACTION', taskId, domainModel, todolistId })
+
+
 export function* tasksWatcherSagas() {
+
     yield takeEvery('FETCH_TASKS', fetchTasksWorkerSaga)
     yield takeEvery('REMOVE_TASK_ACTION', removeTaskWorkerSaga)
     yield takeEvery('ADD_TASK', addTaskWorkerSaga)
+    yield takeEvery('UPDATE_TASK_ACTION', updateTaskWorkerSaga)
 }
